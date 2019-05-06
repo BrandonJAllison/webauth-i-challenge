@@ -1,0 +1,15 @@
+{
+  "name": "webauth-i-challenge",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/BrandonJAllison/webauth-i-challenge.git",
+  "author": "Brandon Allison <brandona8128@outlook.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^3.0.6",
+    "express": "^4.16.4",
+    "knex": "^0.16.5",
+    "nodemon": "^1.19.0",
+    "sqlite3": "^4.0.6"
+  }
+}
