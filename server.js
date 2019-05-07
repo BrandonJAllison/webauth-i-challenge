@@ -1,38 +1,44 @@
 const express = require('express');
+const helmet = require('helmet');
+const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const session = require('express-session');
 const KnexSessionStore = require('connect-session-knex')(session);
 const db = require('./dbConfig.js');
 const Users = require('./users/users-module.js');
-const server = express();
+const restrictedRouter = require('./routes/restricted');
 const { authenticate } = require('./Auth/authenitcate');
+const server = express();
 
 const sessionConfig = {
-    name: 'Session ',
-    secret: 'Its a secret',
-    cookie: {
-      maxAge: 1000 * 60 * 60, // in ms
-      secure: false, // used over https only
-    },
-    httpOnly: true, // cannot access the cookie from js using document.cookie
-    resave: false,
-    saveUninitialized: false, // GDPR laws against setting cookies automatically
-  
-    store: new KnexSessionStore({
-      knex: db,
-      tablename: 'sessions',
-      sidfieldname: 'sid',
-      createtable: true,
-      clearInterval: 1000 * 60 * 60, // in ms
-    }),
-  };
+  name: 'Session',
+  secret: 'It is a secret',
+  cookie: {
+    maxAge: 1000 * 60 * 60, // in ms
+    secure: false, // used over https only
+  },
+  httpOnly: true, // cannot access the cookie from js using document.cookie
+  resave: false,
+  saveUninitialized: false, // GDPR laws against setting cookies automatically
 
+  store: new KnexSessionStore({
+    knex: db,
+    tablename: 'sessions',
+    sidfieldname: 'sid',
+    createtable: true,
+    clearInterval: 1000 * 60 * 60, // in ms
+  }),
+};
 
+server.use(helmet());
 server.use(express.json());
+server.use(cors());
 server.use(session(sessionConfig));
-server.use (authenticate);
+
+server.use('/api/restricted', authenticate, restrictedRouter);
+
 server.get('/', (req, res) => {
-  res.send("Working");
+  res.send("It's alive!");
 });
 
 server.post('/api/register', (req, res) => {
@@ -45,7 +51,7 @@ server.post('/api/register', (req, res) => {
       res.status(201).json(saved);
     })
     .catch(err => {
-      res.status(500).json(error);
+      res.status(500).json(err);
     });
 });
 
@@ -63,15 +69,7 @@ server.post('/api/login', (req, res) => {
     });
 });
 
-// function authenticate(req, res, next) {
-//     if (req.session && req.session.user) {
-//       next();
-//     } else {
-//       res.status(401).json({ message: 'You shall not pass!' });
-//     }
-//   }
-
-server.get('/api/users', authenticate, (req, res) => {
+server.get('/api/users', authenticate,restrictedRouter,  (req, res) => {
   Users.find()
     .then(users => {
       res.json(users);
