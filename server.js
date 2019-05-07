@@ -69,7 +69,7 @@ server.post('/api/login', (req, res) => {
     });
 });
 
-server.get('/api/users', authenticate,restrictedRouter,  (req, res) => {
+server.get('/api/users', authenticate,  (req, res) => {
   Users.find()
     .then(users => {
       res.json(users);
