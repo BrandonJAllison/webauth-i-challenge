@@ -5,10 +5,11 @@ const KnexSessionStore = require('connect-session-knex')(session);
 const db = require('./dbConfig.js');
 const Users = require('./users/users-module.js');
 const server = express();
+const { authenticate } = require('./Auth/authenitcate');
 
 const sessionConfig = {
-    name: 'Alpha-Romeo-Juliet',
-    secret: 'Check',
+    name: 'Session ',
+    secret: 'Its a secret',
     cookie: {
       maxAge: 1000 * 60 * 60, // in ms
       secure: false, // used over https only
@@ -29,7 +30,7 @@ const sessionConfig = {
 
 server.use(express.json());
 server.use(session(sessionConfig));
-
+server.use (authenticate);
 server.get('/', (req, res) => {
   res.send("Working");
 });
@@ -62,13 +63,13 @@ server.post('/api/login', (req, res) => {
     });
 });
 
-function authenticate(req, res, next) {
-    if (req.session && req.session.user) {
-      next();
-    } else {
-      res.status(401).json({ message: 'You shall not pass!' });
-    }
-  }
+// function authenticate(req, res, next) {
+//     if (req.session && req.session.user) {
+//       next();
+//     } else {
+//       res.status(401).json({ message: 'You shall not pass!' });
+//     }
+//   }
 
 server.get('/api/users', authenticate, (req, res) => {
   Users.find()
