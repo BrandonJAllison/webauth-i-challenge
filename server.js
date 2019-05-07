@@ -1,15 +1,34 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-
+const session = require('express-session');
+const KnexSessionStore = require('connect-session-knex')(session);
 const db = require('./dbConfig.js');
 const Users = require('./users/users-module.js');
-
-
 const server = express();
+
+const sessionConfig = {
+    name: 'Alpha-Romeo-Juliet',
+    secret: 'Check',
+    cookie: {
+      maxAge: 1000 * 60 * 60, // in ms
+      secure: false, // used over https only
+    },
+    httpOnly: true, // cannot access the cookie from js using document.cookie
+    resave: false,
+    saveUninitialized: false, // GDPR laws against setting cookies automatically
+  
+    store: new KnexSessionStore({
+      knex: db,
+      tablename: 'sessions',
+      sidfieldname: 'sid',
+      createtable: true,
+      clearInterval: 1000 * 60 * 60, // in ms
+    }),
+  };
 
 
 server.use(express.json());
-
+server.use(session(sessionConfig));
 
 server.get('/', (req, res) => {
   res.send("Working");
@@ -21,6 +40,7 @@ server.post('/api/register', (req, res) => {
   user.password = hash;
   Users.add(user)
     .then(saved => {
+      req.session.user = saved;
       res.status(201).json(saved);
     })
     .catch(err => {
@@ -34,6 +54,7 @@ server.post('/api/login', (req, res) => {
     .first()
     .then(user => {
       if (user && bcrypt.compareSync(password, user.password)) {
+        req.session.user = user;
         res.status(200).json({ message: `Welcome ${user.username}!` });
       } else {
         res.status(401).json({ message: 'Invalid Credentials' });
@@ -42,25 +63,12 @@ server.post('/api/login', (req, res) => {
 });
 
 function authenticate(req, res, next) {
-  const { username, password } = req.headers;
-
-  if (username && password) {
-    Users.findBy({ username })
-      .first()
-      .then(user => {
-        if (user && bcrypt.compareSync(password, user.password)) {
-          next();
-        } else {
-          res.status(401).json({ message: 'The credetials are invalid' });
-        }
-      })
-      .catch(err => {
-        res.status(500).json({ message: ' Server Error' });
-      });
-  } else {
-    res.status(400).json({ message: 'Cedentials not provided' });
+    if (req.session && req.session.user) {
+      next();
+    } else {
+      res.status(401).json({ message: 'You shall not pass!' });
+    }
   }
-}
 
 server.get('/api/users', authenticate, (req, res) => {
   Users.find()

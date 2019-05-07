@@ -2,8 +2,9 @@
   "name": "webauth-i-challenge",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts" : {
-    "start" : "nodemon"
+  "scripts": {
+    "server": "nodemon index.js",
+    "start": "node index.js"
   },
   "repository": "https://github.com/BrandonJAllison/webauth-i-challenge.git",
   "author": "Brandon Allison <brandona8128@outlook.com>",
@@ -11,7 +12,9 @@
   "dependencies": {
     "bcrypt": "^3.0.6",
     "bcryptjs": "^2.4.3",
+    "connect-session-knex": "^1.4.0",
     "express": "^4.16.4",
+    "express-session": "^1.16.1",
     "knex": "^0.16.5",
     "nodemon": "^1.19.0",
     "sqlite3": "^4.0.6"
