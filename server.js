@@ -38,7 +38,7 @@ server.use(session(sessionConfig));
 server.use('/api/restricted', authenticate, restrictedRouter);
 
 server.get('/', (req, res) => {
-  res.send("It's alive!");
+  res.send("Working");
 });
 
 server.post('/api/register', (req, res) => {
